@@ -10,6 +10,7 @@ Traditional neural networks can’t do this, and it seems like a major shortcomi
 Recurrent neural networks address this issue. They are networks with loops in them, allowing information to persist.
 
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/RNN-rolled.png "Recurrent Neural Networks have loops.")
+
 Recurrent Neural Networks have loops.
 
 In the above diagram, a chunk of neural network, A, looks at some input xt and outputs a value ht. A loop allows information to be passed from one step of the network to the next.
@@ -17,6 +18,7 @@ In the above diagram, a chunk of neural network, A, looks at some input xt and o
 These loops make recurrent neural networks seem kind of mysterious. However, if you think a bit more, it turns out that they aren’t all that different than a normal neural network. A recurrent neural network can be thought of as multiple copies of the same network, each passing a message to a successor. Consider what happens if we unroll the loop:
 
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/RNN-unrolled.png "An unrolled recurrent neural network.")
+
 An unrolled recurrent neural network.
 
 This chain-like nature reveals that recurrent neural networks are intimately related to sequences and lists. They’re the natural architecture of neural network to use for such data.
@@ -32,10 +34,13 @@ One of the appeals of RNNs is the idea that they might be able to connect previo
 Sometimes, we only need to look at recent information to perform the present task. For example, consider a language model trying to predict the next word based on the previous ones. If we are trying to predict the last word in “the clouds are in the sky,” we don’t need any further context – it’s pretty obvious the next word is going to be sky. In such cases, where the gap between the relevant information and the place that it’s needed is small, RNNs can learn to use the past information.
 
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/RNN-shorttermdepdencies.png)
+
 But there are also cases where we need more context. Consider trying to predict the last word in the text “I grew up in France… I speak fluent French.” Recent information suggests that the next word is probably the name of a language, but if we want to narrow down which language, we need the context of France, from further back. It’s entirely possible for the gap between the relevant information and the point where it is needed to become very large.
 
 Unfortunately, as that gap grows, RNNs become unable to learn to connect the information.
+
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/RNN-longtermdependencies.png)
+
 In theory, RNNs are absolutely capable of handling such “long-term dependencies.” A human could carefully pick parameters for them to solve toy problems of this form. Sadly, in practice, RNNs don’t seem to be able to learn them. The problem was explored in depth by Hochreiter (1991) [German] and Bengio, et al. (1994), who found some pretty fundamental reasons why it might be difficult.
 
 Thankfully, LSTMs don’t have this problem!
@@ -49,15 +54,19 @@ LSTMs are explicitly designed to avoid the long-term dependency problem. Remembe
 All recurrent neural networks have the form of a chain of repeating modules of neural network. In standard RNNs, this repeating module will have a very simple structure, such as a single tanh layer.
 
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/LSTM3-SimpleRNN.png "The repeating module in a standard RNN contains a single layer.")
+
 The repeating module in a standard RNN contains a single layer.
 
 LSTMs also have this chain like structure, but the repeating module has a different structure. Instead of having a single neural network layer, there are four, interacting in a very special way.
 
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/LSTM3-chain.png "The repeating module in an LSTM contains four interacting layers.")
+
 The repeating module in an LSTM contains four interacting layers.
 
 Don’t worry about the details of what’s going on. We’ll walk through the LSTM diagram step by step later. For now, let’s just try to get comfortable with the notation we’ll be using.
+
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/LSTM2-notation.png)
+
 In the above diagram, each line carries an entire vector, from the output of one node to the inputs of others. The pink circles represent pointwise operations, like vector addition, while the yellow boxes are learned neural network layers. Lines merging denote concatenation, while a line forking denote its content being copied and the copies going to different locations.
 
 ## The Core Idea Behind LSTMs
@@ -69,6 +78,7 @@ The cell state is kind of like a conveyor belt. It runs straight down the entire
 The LSTM does have the ability to remove or add information to the cell state, carefully regulated by structures called gates.
 
 Gates are a way to optionally let information through. They are composed out of a sigmoid neural net layer and a pointwise multiplication operation.
+
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/LSTM3-gate.png)
 
 The sigmoid layer outputs numbers between zero and one, describing how much of each component should be let through. A value of zero means “let nothing through,” while a value of one means “let everything through!”
@@ -95,6 +105,7 @@ In the case of the language model, this is where we’d actually drop the inform
 Finally, we need to decide what we’re going to output. This output will be based on our cell state, but will be a filtered version. First, we run a sigmoid layer which decides what parts of the cell state we’re going to output. Then, we put the cell state through tanh (to push the values to be between −1 and 1) and multiply it by the output of the sigmoid gate, so that we only output the parts we decided to.
 
 For the language model example, since it just saw a subject, it might want to output information relevant to a verb, in case that’s what is coming next. For example, it might output whether the subject is singular or plural, so that we know what form a verb should be conjugated into if that’s what follows next.
+
 ![](http://colah.github.io/posts/2015-08-Understanding-LSTMs/img/LSTM3-focus-o.png)
 
 ## Variants on Long Short Term Memory
